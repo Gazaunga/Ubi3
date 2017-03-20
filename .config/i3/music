@@ -1,0 +1,99 @@
+#!/bin/python
+import json
+import subprocess
+import os, sys
+import pprint
+import websocket
+from websocket import create_connection
+    
+def processRunning( processName ):
+    ps= subprocess.Popen('ps -ef | grep "'+processName+'"', shell=True, stdout=subprocess.PIPE)
+    output = ps.stdout.read()
+    ps.stdout.close()
+    ps.wait()
+    output=output.decode("utf-8")
+    output=output.split("\n")
+    for i in output:
+        if processName in i and "grep" not in output:
+            return True
+    return False
+
+if(processRunning("/usr/share/gpmdp/Google Play Music Desktop Player")):
+    appName="i3block-gpmdp"
+    ws = create_connection('ws://localhost:5672')
+    with open('/home/callum/.config/i3/music_gpmdp_code', 'r') as f:
+        code = f.readline().strip()
+    if (len(code) > 4):
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+        if (str(os.environ.get('BLOCK_BUTTON')) == "1"):
+            ws.send('{"namespace":"playback","method":"playPause", "arguments":""}')
+            while True:
+                response = json.loads(ws.recv())
+                if "channel" in response:
+                    if response["channel"] == "playlists":
+                        break;
+            ws.close()
+            print ("pause")
+        if (len(sys.argv)>1):
+            if (sys.argv[1]=="--toggle"):
+                method="playPause"
+            elif (sys.argv[1]=="--next"):
+                method="forward"
+            elif (sys.argv[1]=="--prev"):
+                method="rewind"
+            else:
+                method=None
+            if method:
+                ws.send('{"namespace":"playback","method":"'+method+'", "arguments":""}')
+                while True:
+                    response = json.loads(ws.recv())
+                    if "channel" in response:
+                        if response["channel"] == "playlists":
+                            break;
+                ws.close()
+        else:
+            while True:
+                response = json.loads(ws.recv())
+                if "channel" in response:
+                    if response["channel"] == "track":
+                        title=response["payload"]["title"]
+                        artist=response["payload"]["artist"]
+                    if response["channel"] == "time":
+                        time=response["payload"]["current"]
+                        length=response["payload"]["total"]
+                        m, s = divmod(time/1000, 60)
+                        time="{}:{:02d}".format(int(m),int(s))
+                        m, s = divmod(length/1000, 60)
+                        length="{}:{:02d}".format(int(m),int(s))
+                        break;
+            ws.close()
+            returnable="{}/{} {} - {}".format(time, length, title,artist)
+            print (returnable)        
+    elif (code == "-1"):
+        if (str(os.environ.get('BLOCK_BUTTON')) == "1"):
+            ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'"]}')
+            while True:
+                response = json.loads(ws.recv())
+                if "channel" in response:
+                    if response["channel"] == "connect":
+                        break;
+            print ("Code requested")
+        print("Click to request 4 Digit Code")
+    elif (len(code)==4):
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+        while True:
+            result = json.loads(ws.recv())
+            if "channel" in result:
+                if result["channel"] == "connect":
+                    break;
+        code=result["payload"]
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+        ws.close()
+        f=open('/home/callum/.config/i3/music_gpmdp_code', 'w')
+        f.write(code)
+        f.close()
+        print("Code Recieved")
+    else:
+        print("GPMDP-i3Block not working")
+else:
+    None
