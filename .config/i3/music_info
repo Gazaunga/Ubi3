@@ -1,0 +1,21 @@
+#!/bin/python
+import json, os, subprocess
+
+with open(os.path.expanduser('~/.config/Google Play Music Desktop Player/json_store/playback.json'), 'r') as f:
+    info=json.loads(f.read())
+    title=info["song"]["title"]
+    if (title):
+        artist=info["song"]["artist"]
+        time=info["time"]["current"]
+        length=info["time"]["total"]
+        m, s = divmod(time/1000, 60)
+        time="{}:{:02d}".format(int(m),int(s))
+        m, s = divmod(length/1000, 60)
+        length="{}:{:02d}".format(int(m),int(s))
+        if (not info["playing"]):
+            paused="paused "
+        else:
+            paused=""
+        print("{}{}/{} {} - {}".format(paused,time, length, title,artist))
+        if (os.environ.get('BLOCK_BUTTON')=="1"):
+            subprocess.Popen('gpmdp_control --playPause', shell=True)
