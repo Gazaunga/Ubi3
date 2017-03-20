@@ -157,4 +157,59 @@ function to_install() {
   echo "${remain[@]}"
 }
 
+# ----------------------------------------------------------------------
+# UBUNTU FUNCTIONS
+# ----------------------------------------------------------------------
+
+autoremove() {
+
+    # Remove packages that were automatically installed to satisfy
+    # dependencies for other packages and are no longer needed.
+
+    execute \
+        "sudo apt-get autoremove -qqy" \
+        "APT (autoremove)"
+
+}
+
+install_package() {
+
+    declare -r PACKAGE="$2"
+    declare -r PACKAGE_READABLE_NAME="$1"
+
+    if ! package_is_installed "$PACKAGE"; then
+        execute "sudo apt-get install --allow-unauthenticated -qqy $PACKAGE" "$PACKAGE_READABLE_NAME"
+        #                                      suppress output ─┘│
+        #            assume "yes" as the answer to all prompts ──┘
+    else
+        print_success "$PACKAGE_READABLE_NAME"
+    fi
+
+}
+
+upgrade() {
+
+    # Install the newest versions of all packages installed.
+
+    execute \
+        "export DEBIAN_FRONTEND=\"noninteractive\" \
+            && sudo apt-get -o Dpkg::Options::=\"--force-confnew\" upgrade -qqy" \
+        "APT (upgrade)"
+
+}
+
+mkdd() {
+    if [ -n "$1" ]; then
+        if [ -e "$1" ]; then
+            if [ ! -d "$1" ]; then
+                print_error "$1 - a file with the same name already exists!"
+            else
+                print_success "$1"
+            fi
+        else
+            execute "mkdir -p $1" "$1"
+        fi
+    fi
+}
+
 #https://natelandau.com/bash-scripting-utilities/
