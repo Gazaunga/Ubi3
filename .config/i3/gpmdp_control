@@ -1,0 +1,66 @@
+#!/bin/python
+import json
+import subprocess
+import os, sys
+import websocket
+from websocket import create_connection
+    
+def processRunning( processName ):
+    ps= subprocess.Popen('ps -ef | grep "'+processName+'"', shell=True, stdout=subprocess.PIPE)
+    output = ps.stdout.read()
+    ps.stdout.close()
+    ps.wait()
+    output=output.decode("utf-8")
+    output=output.split("\n")
+    for i in output:
+        if processName in i and "grep" not in output:
+            return True
+    return False
+
+if(processRunning("/usr/share/gpmdp/Google Play Music Desktop Player")):
+    appName="gpmdp_control"
+    try:
+        with open(os.path.expanduser('~/.config/Google Play Music Desktop Player/gpmdp_control_code'), 'r') as f:
+            code = f.readline().strip()
+    except FileNotFoundError:
+        code="-1"
+    if (len(code) > 4):
+        if (len(sys.argv)>1):
+            method=sys.argv[1][2:]
+            if method:
+                ws = create_connection('ws://localhost:5672')
+                ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+                ws.send('{"namespace":"playback","method":"'+method+'", "arguments":""}')
+                while True:
+                    response = json.loads(ws.recv())
+                    if "channel" in response:
+                        if response["channel"] == "playlists":
+                            break;
+                ws.close()
+    elif (code == "-1"):
+        ws = create_connection('ws://localhost:5672')
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'"]}')
+        while True:
+            response = json.loads(ws.recv())
+            if "channel" in response:
+                if response["channel"] == "connect":
+                    break;
+        code=input('Type the 4 digit code displayed in the GPMDP window: ')
+        ws = create_connection('ws://localhost:5672')
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+        while True:
+            result = json.loads(ws.recv())
+            if "channel" in result:
+                if result["channel"] == "connect":
+                    break;
+        code=result["payload"]
+        ws.send('{"namespace":"connect","method":"connect", "arguments":["'+appName+'","'+code+'"]}')
+        ws.close()
+        f=open(os.path.expanduser('~/.config/Google Play Music Desktop Player/gpmdp_control_code'), 'w')
+        f.write(code)
+        f.close()
+        print("Code Recieved")
+    else:
+        print("Something is wrong with your code file try deleting ~/.config/Google Play Music Desktop Player/gpmdp_control_code")
+else:
+    print("GPMDP is not currently running")
