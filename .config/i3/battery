@@ -1,0 +1,79 @@
+#!/usr/bin/perl
+#
+# Copyright 2014 Pierre Mavro <deimos@deimos.fr>
+# Copyright 2014 Vivien Didelot <vivien@didelot.org>
+#
+# Licensed under the terms of the GNU GPL v3, or any later version.
+#
+# This script is meant to use with i3blocks. It parses the output of the "acpi"
+# command (often provided by a package of the same name) to read the status of
+# the battery, and eventually its remaining time (to full charge or discharge).
+#
+# The color will gradually change for a percentage below 85%, and the urgency
+# (exit code 33) is set if there is less that 5% remaining.
+
+use strict;
+use warnings;
+use utf8;
+
+my $status;
+my $percent;
+my $file;
+my $full_text;
+my $short_text;
+my $color="";
+my $bat_number = $ENV{BLOCK_INSTANCE} || 0;
+
+# read the first line of the "acpi" command output
+
+open($file, '<:encoding(UTF-8)', "/sys/class/power_supply/BAT1/status") or die;
+$status = <$file>;
+chomp($status);
+close($file);
+open($file, '<:encoding(UTF-8)', "/sys/class/power_supply/BAT1/capacity") or die;
+$percent = <$file>;
+chomp($percent);
+close($file);
+$full_text = "$percent%";
+
+
+# consider color and urgent flag only on discharge
+#if ($status eq 'Discharging') {
+
+	if ($percent < 10){
+		$full_text .= ' ';
+		$color = "#FF0000";
+	} elsif ($percent < 35) {
+		$full_text .= ' ';
+		$color = "#FFAE00";
+	} elsif ($percent < 65) {
+		$color = "#FFAE00";
+		$full_text .= ' ';
+	} elsif ($percent < 85) {
+		$color = "#FFF600";
+		$full_text .= ' ';
+	} else {
+		$color = "#A8FF00";
+		$full_text .= ' ';
+	}
+		
+
+	if ($percent < 5) {
+		exit(33);
+	}
+#}
+
+if ($status eq 'Charging') {
+	$full_text .= ' ';
+}
+
+
+$short_text = $full_text;
+
+
+# print text
+print "$full_text\n";
+print "$short_text\n";
+print "$color\n";
+
+exit(0);
