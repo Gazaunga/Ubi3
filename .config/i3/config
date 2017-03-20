@@ -215,7 +215,7 @@ bindsym $mod+Prior workspace prev
 
 # Startup Programs
 exec --no-startup-id xautolock -time 5 -locker ~/.config/i3/i3lock.sh 
-exec --no-startup-id feh --bg-fill ~/.wallpaper.jpg
+exec --no-startup-id feh --bg-fill ~/wallpaper.jpg
 exec_always --no-startup-id compton -cCGfF -o 0.38 -O 200 -I 200 -t 0 -l 0 -r 3 -D2 -m 0.88
 
 set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (Shift+s) shutdown
