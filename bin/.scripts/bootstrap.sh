@@ -70,8 +70,24 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA300B7755AFCFAE
 sudo add-apt-repository 'deb https://typora.io ./linux/'
 sudo apt-get -y --allow-unauthenticated update
 sudo apt-get -y --allow-unauthenticated install typora
-sudo chmod +x setup-nautilus.sh
-./setup-nautilus.sh
 cd ~/
 git clone https://github.com/nojhan/liquidprompt.git
 source liquidprompt/liquidprompt
+cd ~/Ubi3
+mv -f  .bashrc ~/.bashrc
+mv -f  .bash_aliases ~/.bash_aliases
+mv -f  .bash_functions ~/.bash_functions
+mv -f  .Xresources ~/.Xresources
+mv -f  .editorconfig ~/.editorconfig
+mv -f  .gitconfig ~/.gitconfig
+mv -f  .lesskey ~/.lesskey
+mv -f  .profile ~/.profile
+mv -f  .screenrc ~/.screenrc
+mv -f  .xinitrc ~/.xinitrc
+mv -f  wallpaper.jpg ~/wallpaper.jpg
+mv -f  .config ~/.config
+mv -f  bin ~/bin
+mv -f  .gitignore ~/.gitignore
+cd ~/bin
+sudo chmod +x setup-nautilus.sh
+./setup-nautilus.sh
