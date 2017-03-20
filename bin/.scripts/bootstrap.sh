@@ -42,7 +42,7 @@ mkdir -p build && cd build/
 ../configure --prefix=/usr --sysconfdir=/etc --disable-sanitizers
 make
 sudo make install
-sudo apt-get -y --allow-unauthenticated install lxappearance \
+sudo apt-get -y --allow-unauthenticated install tree lxappearance \
 feh \
 texlive-full \
 nautilus \
