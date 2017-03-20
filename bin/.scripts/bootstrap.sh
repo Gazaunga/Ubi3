@@ -2,7 +2,7 @@
 source /home/gazbit/Ubi3/bin/.scripts/utils.sh
 source /home/gazbit/bin/.scripts/utils.sh
 cd ~/Ubi3
-sudo apt-get -qq update && sudo apt-get -qq dist-upgrade
+sudo apt-get -qqy update && sudo apt-get -qqy dist-upgrade
 sudo apt-get -y install xdg-user-dirs
 xdg-user-dirs-update
 sudo add-apt-repository ppa:rvm/smplayer
