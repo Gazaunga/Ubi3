@@ -39,7 +39,7 @@ rm -rf build/
 mkdir -p build && cd build/
 # Disabling sanitizers is important for release versions!
 # The prefix and sysconfdir are, obviously, dependent on the distribution.
-../configure --prefix=/usr --sysconfdir=/etc --disable-sanitizers
+./configure --prefix=/usr --sysconfdir=/etc --disable-sanitizers
 make
 sudo make install
 sudo apt-get -y --allow-unauthenticated install tree lxappearance \
@@ -74,20 +74,13 @@ cd ~/
 git clone https://github.com/nojhan/liquidprompt.git
 source liquidprompt/liquidprompt
 cd ~/Ubi3
-mv -f  .bashrc ~/.bashrc
-mv -f  .bash_aliases ~/.bash_aliases
-mv -f  .bash_functions ~/.bash_functions
-mv -f  .Xresources ~/.Xresources
-mv -f  .editorconfig ~/.editorconfig
-mv -f  .gitconfig ~/.gitconfig
-mv -f  .lesskey ~/.lesskey
-mv -f  .profile ~/.profile
-mv -f  .screenrc ~/.screenrc
-mv -f  .xinitrc ~/.xinitrc
-mv -f  wallpaper.jpg ~/wallpaper.jpg
+declare -a arr=(".bashrc" ".bash_aliases" ".bash_functions" ".Xresources" ".editorconfig" ".gitconfig" ".lesskey" ".profile" ".screenrc" ".xinitrc" "wallpaper.jpg" ".gitignore")
+for i in "${arr[@]}"
+do
+  cp $i ~/$i
+done
 mv -f  .config ~/.config
 mv -f  bin ~/bin
-mv -f  .gitignore ~/.gitignore
 cd ~/bin
 sudo chmod +x setup-nautilus.sh
 ./setup-nautilus.sh
